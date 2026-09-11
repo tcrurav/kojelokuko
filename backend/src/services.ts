@@ -1,5 +1,6 @@
 import { createHash, randomBytes, randomInt } from "node:crypto";
 import { EventEmitter } from "node:events";
+import { questionContent } from "./questions";
 import { Op, Transaction, UniqueConstraintError } from "sequelize";
 import {
   db,
@@ -52,8 +53,11 @@ export async function createGame(
   for (let attempt = 0; attempt < 8; attempt++)
     try {
       return await db.transaction(async (transaction) => {
-        const questions = await Question.findAll({ transaction });
-        requireThat(questions.length >= count, "question_bank_missing", 503);
+        const questions = await Question.findAll({
+          where: { deletedAt: null },
+          transaction,
+        });
+        requireThat(questions.length >= count, "insufficient_questions", 409);
         for (let i = questions.length - 1; i > 0; i--) {
           const j = randomInt(i + 1);
           [questions[i], questions[j]] = [questions[j], questions[i]];
@@ -72,6 +76,7 @@ export async function createGame(
             gameId: game.id,
             questionId: q.id,
             position: i + 1,
+            questionSnapshot: questionContent(q),
           })),
           { transaction },
         );
@@ -356,7 +361,7 @@ export async function command(
           );
           const m = await member();
           requireThat(m, "spectator");
-          const q = await Question.findByPk(active.questionId, { transaction });
+          const q = active.questionSnapshot;
           requireThat(q, "question_not_found");
           const correct = m.side === q.correctOption;
           await TeamAnswer.create(
@@ -435,9 +440,7 @@ export async function snapshot(
         "SHOWING_RANKING",
         "FINISHED",
       ].includes(game.status);
-      const q = active
-        ? await Question.findByPk(active.questionId, { transaction })
-        : null;
+      const q = active?.questionSnapshot ?? null;
       const visibleAnswers = answers.filter(
         (a) => revealed || a.gameQuestionId !== active?.id,
       );
