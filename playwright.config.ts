@@ -3,7 +3,7 @@ export default defineConfig({
   testDir: "./e2e",
   timeout: 60000,
   use: {
-    baseURL: process.env.TEST_URL || "http://localhost:8080",
+    baseURL: process.env.TEST_URL || "http://localhost",
     headless: true,
     viewport: { width: 1440, height: 1000 },
     screenshot: "only-on-failure",

@@ -1,4 +1,8 @@
-:80 {
+{
+ auto_https disable_redirects
+}
+
+(application) {
  handle /api/* {
   reverse_proxy backend:3000
  }
@@ -11,4 +15,12 @@
   file_server
  }
  encode gzip zstd
+}
+
+:80 {
+ import application
+}
+
+{$SITE_ADDRESS:http://localhost} {
+ import application
 }
