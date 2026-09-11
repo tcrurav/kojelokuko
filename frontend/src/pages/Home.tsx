@@ -1,20 +1,37 @@
 import { Link } from "react-router-dom";
+const logoUrl = new URL(
+  "../assets/images/Logo_Kojelo_Kuko.png",
+  import.meta.url,
+).href;
 export default function Home() {
   return (
     <main className="hero">
-      <span className="eyebrow">DOS MENTES. UNA RESPUESTA.</span>
-      <h1>
-        Piensa.
-        <br />
-        Debate.
-        <br />
-        <em>¡Dale al ENTER!</em>
-      </h1>
-      <p>
-        El juego de programación que se juega en pareja.
-        <br />
-        Una persona a la izquierda. Otra a la derecha. ¿Os ponéis de acuerdo?
-      </p>
+      <div className="hero-intro">
+        <div className="hero-copy">
+          <span className="eyebrow">DOS MENTES. UNA RESPUESTA.</span>
+          <h1>
+            Piensa.
+            <br />
+            Debate.
+            <br />
+            <em>¡Dale al ENTER!</em>
+          </h1>
+          <p>
+            El juego de programación que se juega en pareja.
+            <br />
+            Una persona a la izquierda. Otra a la derecha. ¿Os ponéis de
+            acuerdo?
+          </p>
+        </div>
+        <img
+          className="hero-logo"
+          src={logoUrl}
+          alt="Koje lo Kuko, la mascota del juego"
+          width={1280}
+          height={1280}
+          decoding="async"
+        />
+      </div>
       <div className="choices">
         <Link className="card home-card" to="/teacher">
           <span>✦</span>

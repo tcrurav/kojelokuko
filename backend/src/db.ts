@@ -15,6 +15,9 @@ export const db = new Sequelize(
   },
 );
 export interface Row {
+  deletedAt: Date | null;
+  version: number;
+  questionSnapshot: QuestionContent;
   id: number;
   name: string;
   email: string;
@@ -59,6 +62,16 @@ export interface Row {
   targetRelativePosition: Side;
   requestStatus: string;
 }
+export type QuestionContent = Pick<
+  Row,
+  | "statement"
+  | "leftOption"
+  | "rightOption"
+  | "correctOption"
+  | "explanation"
+  | "category"
+  | "difficulty"
+>;
 export type Entity = Model<Row, Partial<Row>> & Row;
 const id = { type: D.INTEGER.UNSIGNED, primaryKey: true, autoIncrement: true };
 const integer = { type: D.INTEGER.UNSIGNED, allowNull: false };
@@ -124,6 +137,8 @@ export const TeamMember = model("TeamMember", {
   side: { type: D.ENUM("LEFT", "RIGHT"), allowNull: false },
 });
 export const Question = model("Question", {
+  deletedAt: { type: D.DATE(3), allowNull: true, defaultValue: null },
+  version: { type: D.INTEGER.UNSIGNED, allowNull: false, defaultValue: 0 },
   statement: { type: D.TEXT, allowNull: false },
   leftOption: str,
   rightOption: str,
@@ -133,6 +148,7 @@ export const Question = model("Question", {
   difficulty: str,
 });
 export const GameQuestion = model("GameQuestion", {
+  questionSnapshot: { type: D.JSON, allowNull: false },
   gameId: integer,
   questionId: integer,
   position: integer,

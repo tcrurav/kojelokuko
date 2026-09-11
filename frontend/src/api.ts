@@ -16,12 +16,22 @@ export const messages: Record<string, string> = {
   no_teams: "Hace falta al menos un equipo completo.",
   busy: "Espera un instante y vuelve a intentarlo.",
   stale_question: "La pregunta ha cambiado. Espera a la sincronización.",
+  question_not_found:
+    "Esta pregunta ya no está disponible. Actualiza el listado.",
+  question_conflict:
+    "Otro profesor ha cambiado esta pregunta. Vuelve a abrirla desde el listado antes de guardar o eliminar.",
+  insufficient_questions:
+    "No hay suficientes preguntas en el banco. Reduce el número de la partida o añade preguntas.",
 };
 export const errorText = (code: string) =>
   messages[code] || "No se pudo completar la acción. Inténtalo de nuevo.";
-export async function api<T>(path: string, body?: unknown): Promise<T> {
+export async function api<T>(
+  path: string,
+  body?: unknown,
+  method: "GET" | "POST" | "PUT" | "DELETE" = body ? "POST" : "GET",
+): Promise<T> {
   const response = await fetch("/api" + path, {
-    method: body ? "POST" : "GET",
+    method,
     headers: {
       "Content-Type": "application/json",
       Authorization: "Bearer " + (localStorage.getItem("teacherToken") || ""),

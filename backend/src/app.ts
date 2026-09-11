@@ -8,6 +8,17 @@ import { UniqueConstraintError } from "sequelize";
 import { db, Teacher, Player, Game } from "./db";
 import { AppError, requireThat } from "./domain";
 import { createGame, join, hash, Identity, snapshot } from "./services";
+import {
+  createQuestion,
+  updateQuestion,
+  deleteQuestion,
+  getQuestion,
+  listQuestions,
+  questionSchema,
+  questionUpdateSchema,
+  questionVersionSchema,
+  questionQuerySchema,
+} from "./questions";
 export const avatars = [
   "🤖",
   "🥷",
@@ -151,6 +162,54 @@ const identity = (req: Request) =>
     (req.headers.authorization || "").replace(/^Bearer /, ""),
     String(req.headers["x-session-kind"] || "teacher"),
   );
+const teacherOnly = async (req: Request) => {
+  const who = await identity(req);
+  requireThat(who.kind === "teacher", "forbidden", 403);
+  return who;
+};
+const questionId = (req: Request) =>
+  z.coerce.number().int().positive().parse(req.params.id);
+app.get(
+  "/api/questions",
+  wrap(async (req, res) => {
+    await teacherOnly(req);
+    const query = questionQuerySchema.parse(req.query);
+    res.json(await listQuestions(query.search, query.page));
+  }),
+);
+app.get(
+  "/api/questions/:id",
+  wrap(async (req, res) => {
+    await teacherOnly(req);
+    res.json(await getQuestion(questionId(req)));
+  }),
+);
+app.post(
+  "/api/questions",
+  wrap(async (req, res) => {
+    await teacherOnly(req);
+    res.status(201).json(await createQuestion(questionSchema.parse(req.body)));
+  }),
+);
+app.put(
+  "/api/questions/:id",
+  wrap(async (req, res) => {
+    await teacherOnly(req);
+    const data = questionUpdateSchema.parse(req.body);
+    res.json(
+      await updateQuestion(questionId(req), data.version, data.question),
+    );
+  }),
+);
+app.delete(
+  "/api/questions/:id",
+  wrap(async (req, res) => {
+    await teacherOnly(req);
+    const data = questionVersionSchema.parse(req.body);
+    await deleteQuestion(questionId(req), data.version);
+    res.json({ ok: true });
+  }),
+);
 app.get(
   "/api/auth/me",
   wrap(async (req, res) => {
