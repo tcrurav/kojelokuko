@@ -52,6 +52,28 @@ main.narrow {
 .hero {
   padding-top: 35px;
 }
+.hero-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 32px;
+}
+.hero-logo {
+  display: block;
+  width: 100%;
+  max-width: 440px;
+  height: auto;
+  justify-self: center;
+}
+@media (max-width: 850px) {
+  .hero-intro {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .hero-logo {
+    max-width: 240px;
+  }
+}
 .eyebrow {
   font-size: 0.75rem;
   font-weight: 800;
