@@ -6,7 +6,7 @@ Competición presencial de programación por parejas. Un profesor dirige el ritm
 
 1. Copia `.env.example` a `.env` y cambia las tres contraseñas/secretos por valores aleatorios distintos. `JWT_SECRET` necesita al menos 32 caracteres.
 2. Ejecuta `docker compose up -d --build`.
-3. Abre `http://localhost:8080`. Registra una cuenta de profesor; no hay credenciales predeterminadas.
+3. Abre `http://localhost`. Registra una cuenta de profesor; no hay credenciales predeterminadas.
 
 Caddy es el único servicio publicado. MySQL conserva sus datos en `mysql_data`; backend y DB solo están en la red interna. El frontend se compila dentro de la imagen de Caddy y se sirve como SPA. El backend espera el healthcheck MySQL y ejecuta migraciones y seeders Sequelize antes de arrancar. Se despliega **una sola instancia backend**.
 
@@ -53,4 +53,20 @@ Los timestamps persistidos mandan sobre el contador visual. Un monitor de 250 ms
 
 REST y Socket.IO usan el mismo origen. Polling inicia la conexión y WebSocket es opcional. Añade `?polling` a la URL de profesor/jugador para desactivar el upgrade. El profesor muestra el transporte efectivo. Comprueba `/api/health` y completa una partida a través del bastión aunque nunca aparezca WebSocket.
 
-Caddy escucha HTTP en 8080 para funcionar detrás del proxy TLS institucional. Para exponerlo directamente en Internet, configura el dominio y HTTPS en Caddy. No escalar backend horizontalmente sin adapter compartido y afinidad compatible con polling. Los logs no incluyen tokens, contraseñas ni respuestas.
+Caddy publica HTTP en el puerto 80 y HTTPS en el 443. Para habilitar HTTPS en Isard, configura en el `.env` del escritorio:
+
+```env
+PUBLIC_PORT=80
+PUBLIC_HTTPS_PORT=443
+SITE_ADDRESS=https://06b9df32-b4e5-4267-8573.74ddeeee70b1.sites.escritorios.ieselrincon.es
+```
+
+Ejecuta `docker compose up -d --build`. En la configuración del bastión del escritorio, el puerto HTTP debe apuntar al 80 y el HTTPS al 443. Mantén Proxy Protocol v2 desactivado con esta configuración de Caddy.
+
+Caddy solicita y renueva un certificado público automáticamente. Los volúmenes `caddy_data` y `caddy_config` conservan sus datos entre reinicios. HTTP sigue sirviendo la aplicación: no se fuerza una redirección. El dominio debe resolver al bastión y este debe reenviar las validaciones ACME al escritorio; Caddy necesita salida a Internet. Comprueba la emisión con `docker compose logs --tail=100 caddy` y el acceso con `curl -I https://TU_DOMINIO` (sin omitir la validación del certificado).
+
+En desarrollo, `SITE_ADDRESS=http://localhost` mantiene HTTP sin solicitar un certificado público. Cambia el dominio si recreas el escritorio y cambia su dirección del bastión.
+
+Este comportamiento de reenvío HTTP/HTTPS está documentado en la [guía del bastión de Isard](https://isard.gitlab.io/isardvdi-docs/user/bastion/). Si otra instalación termina TLS en un proxy anterior, puede mantener `SITE_ADDRESS=http://localhost` y reenviar HTTP al puerto 80.
+
+No escalar backend horizontalmente sin adapter compartido y afinidad compatible con polling. Los logs no incluyen tokens, contraseñas ni respuestas.
