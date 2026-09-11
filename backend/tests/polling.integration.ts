@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { io, Socket } from "socket.io-client";
 import type { State, Game } from "../../frontend/src/types";
-const base = process.env.TEST_URL || "http://localhost:8080";
+const base = process.env.TEST_URL || "http://localhost";
 test(
   "ocho jugadores sincronizan sin agotar el pool y los espectadores no responden",
   { timeout: 30000 },
