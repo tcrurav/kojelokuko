@@ -3,12 +3,17 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { api } from "../api";
 import type { Game } from "../types";
 import { ErrorBox } from "../components/ErrorBox";
+import type { QuestionList } from "../question-types";
 export default function Dashboard() {
   const [games, setGames] = useState<Game[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [available, setAvailable] = useState<number | null>(null);
   const navigate = useNavigate();
   useEffect(() => {
+    void api<QuestionList>("/questions")
+      .then((data) => setAvailable(data.total))
+      .catch((e) => setError(e.message));
     void api<Game[]>("/games")
       .then(setGames)
       .catch((e) => setError(e.message));
@@ -32,6 +37,19 @@ export default function Dashboard() {
           Cerrar sesión
         </button>
       </div>
+      <div className="card bank-access">
+        <div>
+          <h2>Preguntas y respuestas</h2>
+          <p>
+            {available === null
+              ? "Consulta y prepara tu banco de preguntas."
+              : `${available} preguntas disponibles. Crea, revisa y edita los próximos retos.`}
+          </p>
+        </div>
+        <Link className="button-link" to="/teacher/questions">
+          Gestionar preguntas →
+        </Link>
+      </div>
       <form
         className="card config"
         onSubmit={async (e) => {
@@ -53,8 +71,13 @@ export default function Dashboard() {
       >
         <label>
           Preguntas
-          <select name="count" defaultValue="5">
-            {Array.from({ length: 20 }, (_, i) => (
+          <select
+            name="count"
+            key={available}
+            disabled={!available}
+            defaultValue={Math.min(5, available ?? 5)}
+          >
+            {Array.from({ length: Math.min(20, available ?? 0) }, (_, i) => (
               <option key={i + 1}>{i + 1}</option>
             ))}
           </select>
@@ -68,7 +91,7 @@ export default function Dashboard() {
             ))}
           </select>
         </label>
-        <button disabled={busy}>Crear partida →</button>
+        <button disabled={busy || !available}>Crear partida →</button>
       </form>
       <ErrorBox message={error} />
       <h2>Tus partidas</h2>
