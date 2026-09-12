@@ -82,26 +82,28 @@ test("profesor y dos alumnos completan una ronda con teclado y botón móvil", a
     await b.reload();
     await expect(b.locator(".role")).toContainText("NEGRO / DERECHA");
     await expect(b.locator(".feedback")).toContainText("Respondió");
+    await expect(page.getByRole("switch")).not.toBeChecked();
+    await expect(page.locator(".rankings")).toHaveCount(0);
     await page
-      .getByRole("button", { name: "Clasificación por equipos" })
+      .getByRole("switch", { name: /Ranking por equipos/ })
       .click();
+    await expect(a.locator(".rankings")).toBeVisible();
     await page.getByRole("button", { name: "Siguiente pregunta" }).click();
     await b.getByRole("button", { name: "RESPONDER COMO NEGRO" }).click();
     await expect(b.locator(".feedback")).toContainText("Beto");
+    await expect(page.locator(".rankings")).toBeVisible();
     await page
-      .getByRole("button", { name: "Clasificación por equipos" })
+      .getByRole("switch", { name: /Ranking por equipos/ })
       .click();
+    await expect(a.locator(".rankings")).toHaveCount(0);
     await page.getByRole("button", { name: "Mostrar podio final" }).click();
     await expect(
       page.getByRole("heading", { name: "¡Un aplauso para el aula!" }),
     ).toBeVisible();
     await page.screenshot({ path: "test-results/final.png", fullPage: true });
-    await page
-      .getByRole("button", { name: "Clasificación individual" })
-      .click();
     await expect(
       page.getByRole("heading", { name: "Contribución individual" }),
-    ).toBeVisible();
+    ).toHaveCount(0);
     assertNoErrors();
   } finally {
     await ctxA.close();

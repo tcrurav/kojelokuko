@@ -354,17 +354,18 @@ test(
         assert.equal(finished.results?.attempts, round === 2 ? 0 : 2);
         assert.equal(
           (await emit(teacher, "ranking:set-view", { view: "individual" })).ok,
-          true,
-        );
-        const ranking = await state(
-          teacher,
-          (s) => s.game.rankingView === "individual",
+          false,
         );
         assert.equal(
-          ranking.individualRanking.reduce((sum, r) => sum + r.points, 0),
-          ranking.teamRanking.reduce((sum, r) => sum + r.points, 0),
+          (await emit(teacher, "ranking:set-view", { view: "teams" })).ok,
+          true,
         );
-        await emit(teacher, "ranking:set-view", { view: "teams" });
+        await state(teacher, (s) => s.game.rankingView === "teams");
+        assert.equal(
+          (await emit(teacher, "ranking:set-view", { view: "hidden" })).ok,
+          true,
+        );
+        await state(teacher, (s) => s.game.rankingView === "hidden");
       }
       assert.equal((await emit(teacher, "game:finish")).ok, true);
       const final = await state(teacher, (s) => s.game.status === "FINISHED");

@@ -413,7 +413,9 @@ Equipo:
 - count correctas;
 - tiempos correctos para desempate.
 
-Individual:
+La clasificación individual está desactivada. `Game.rankingView` guarda `hidden` (por defecto) o `teams`. El comando autorizado `ranking:set-view` modifica esta preferencia sin cambiar la fase. `QUESTION_FINISHED` permite pasar directamente a `QUESTION_ACTIVE` o `FINISHED`. El frontend muestra el ranking habilitado junto a los resultados; el podio final siempre está disponible.
+
+Individual (referencia histórica, sin cálculo ni publicación):
 - suma de `scoreAwarded` de TeamAnswers donde `answeredByPlayerId = player.id`;
 - respuestas lanzadas;
 - aciertos ejecutados.

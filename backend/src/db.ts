@@ -117,7 +117,7 @@ export const Game = model("Game", {
   questionExpiresAt: { type: D.DATE(3) },
   startedAt: { type: D.DATE(3) },
   finishedAt: { type: D.DATE(3) },
-  rankingView: { type: D.STRING, defaultValue: "teams" },
+  rankingView: { type: D.STRING, defaultValue: "hidden" },
 });
 export const Player = model("Player", {
   gameId: integer,

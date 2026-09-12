@@ -39,7 +39,7 @@ El profesor crea una partida (1–20 preguntas y 10–120 segundos), proyecta el
 
 El profesor inicia cada pregunta manualmente. La pregunta cierra al agotarse el tiempo, al responder todos los equipos o mediante el control del profesor. Hasta ese momento se confirma recepción, pero no se revela corrección ni puntuación. Después se muestran explicación y estadísticas, se elige clasificación y se inicia la siguiente. Tras la última, el profesor muestra el podio.
 
-Las contribuciones individuales corresponden a los puntos de las respuestas ejecutadas por cada persona, no a una puntuación separada del equipo. Desempates: puntos, aciertos, menor tiempo correcto acumulado e ID estable.
+La clasificación individual está desactivada. El interruptor «Ranking por equipos tras cada pregunta» comienza apagado y se sincroniza entre profesor y alumnos. Su valor se conserva al recargar. Al activarlo, el ranking aparece junto a los resultados tras cada pregunta. Se puede avanzar con el ranking oculto; el podio final sigue disponible. Desempates: puntos, aciertos, menor tiempo correcto acumulado e ID estable.
 
 ## Sesiones y consistencia
 

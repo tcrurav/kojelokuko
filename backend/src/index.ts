@@ -27,9 +27,7 @@ const schemas: Record<string, z.ZodType> = {
   "question:start": z.object({}).strict(),
   "question:finish": z.object({}).strict(),
   "game:finish": z.object({}).strict(),
-  "ranking:set-view": z
-    .object({ view: z.enum(["teams", "individual"]) })
-    .strict(),
+  "ranking:set-view": z.object({ view: z.enum(["teams", "hidden"]) }).strict(),
   "answer:submit": z.object({ gameQuestionId: positive }).strict(),
 };
 io.use((socket, next) => {

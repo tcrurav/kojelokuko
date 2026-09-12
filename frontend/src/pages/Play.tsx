@@ -137,7 +137,10 @@ export default function Play({ teacher = false }: { teacher?: boolean }) {
   );
   const active = game.status === "QUESTION_ACTIVE";
   const lobby = game.status === "LOBBY";
-  const ranking = ["SHOWING_RANKING", "FINISHED"].includes(game.status);
+  const ranking =
+    game.status === "FINISHED" ||
+    (game.rankingView === "teams" &&
+      ["QUESTION_FINISHED", "SHOWING_RANKING"].includes(game.status));
   const seconds = Math.max(
     0,
     Math.ceil(
@@ -390,7 +393,7 @@ export default function Play({ teacher = false }: { teacher?: boolean }) {
               )}
             </div>
           )}
-          {question && !ranking && (
+          {question && game.status !== "FINISHED" && (
             <section>
               <div className="heading">
                 <span className="eyebrow">
@@ -506,22 +509,9 @@ export default function Play({ teacher = false }: { teacher?: boolean }) {
                   ))}
                 </div>
               )}
-              <h2>
-                {game.rankingView === "teams"
-                  ? "Clasificación por equipos"
-                  : "Contribución individual"}
-              </h2>
-              {game.rankingView === "individual" && (
-                <p>
-                  Cuenta los puntos de las respuestas que lanzó cada persona. La
-                  puntuación del equipo es compartida.
-                </p>
-              )}
+              <h2>Clasificación por equipos</h2>
               <div className="rankings">
-                {(game.rankingView === "teams"
-                  ? state.teamRanking
-                  : state.individualRanking
-                ).map((r, i) => (
+                {state.teamRanking.map((r, i) => (
                   <article className="rank" key={r.id}>
                     <strong className="place">{i + 1}</strong>
                     <div>
@@ -552,7 +542,9 @@ export default function Play({ teacher = false }: { teacher?: boolean }) {
           )}
           {teacher && (
             <div className="controls">
-              {["READY", "SHOWING_RANKING"].includes(game.status) &&
+              {["READY", "QUESTION_FINISHED", "SHOWING_RANKING"].includes(
+                game.status,
+              ) &&
                 game.currentQuestionIndex < game.questionCount && (
                   <button
                     disabled={pending || !connected}
@@ -573,29 +565,23 @@ export default function Play({ teacher = false }: { teacher?: boolean }) {
                   Cerrar pregunta
                 </button>
               )}
-              {["QUESTION_FINISHED", "SHOWING_RANKING", "FINISHED"].includes(
-                game.status,
-              ) && (
-                <>
-                  <button
-                    className="secondary"
-                    disabled={pending || !connected}
-                    onClick={() => send("ranking:set-view", { view: "teams" })}
-                  >
-                    Clasificación por equipos
-                  </button>
-                  <button
-                    className="secondary"
-                    disabled={pending || !connected}
-                    onClick={() =>
-                      send("ranking:set-view", { view: "individual" })
-                    }
-                  >
-                    Clasificación individual
-                  </button>
-                </>
+              {game.status !== "FINISHED" && (
+                <button
+                  className="secondary"
+                  role="switch"
+                  aria-checked={game.rankingView === "teams"}
+                  disabled={pending || !connected}
+                  onClick={() =>
+                    send("ranking:set-view", {
+                      view: game.rankingView === "teams" ? "hidden" : "teams",
+                    })
+                  }
+                >
+                  Ranking por equipos tras cada pregunta:{" "}
+                  {game.rankingView === "teams" ? "activado" : "desactivado"}
+                </button>
               )}
-              {game.status === "SHOWING_RANKING" &&
+              {["QUESTION_FINISHED", "SHOWING_RANKING"].includes(game.status) &&
                 game.currentQuestionIndex === game.questionCount && (
                   <button
                     disabled={pending || !connected}
