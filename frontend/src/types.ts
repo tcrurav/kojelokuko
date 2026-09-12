@@ -60,5 +60,4 @@ export interface State {
   answeredCount: number;
   results: null | { correct: number; attempts: number };
   teamRanking: Rank[];
-  individualRanking: Rank[];
 }

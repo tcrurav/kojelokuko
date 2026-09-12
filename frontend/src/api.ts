@@ -1,4 +1,10 @@
 export const messages: Record<string, string> = {
+  account_disabled:
+    "Tu cuenta está desactivada o pendiente de aprobación. Contacta con el administrador.",
+  teacher_not_found:
+    "Este profesor ya no está disponible. Actualiza el listado.",
+  protected_account:
+    "Las cuentas de administrador no se pueden modificar desde este panel.",
   invalid_credentials: "Email o contraseña incorrectos.",
   unauthorized: "Tu sesión ha caducado. Vuelve a entrar.",
   game_not_found: "No encontramos ese código.",
@@ -21,7 +27,7 @@ export const messages: Record<string, string> = {
   question_conflict:
     "Otro profesor ha cambiado esta pregunta. Vuelve a abrirla desde el listado antes de guardar o eliminar.",
   insufficient_questions:
-    "No hay suficientes preguntas en el banco. Reduce el número de la partida o añade preguntas.",
+    "No hay suficientes preguntas activas. Reduce el número de la partida o activa más preguntas del banco.",
 };
 export const errorText = (code: string) =>
   messages[code] || "No se pudo completar la acción. Inténtalo de nuevo.";

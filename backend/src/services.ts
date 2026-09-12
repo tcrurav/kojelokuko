@@ -54,7 +54,7 @@ export async function createGame(
     try {
       return await db.transaction(async (transaction) => {
         const questions = await Question.findAll({
-          where: { deletedAt: null },
+          where: { deletedAt: null, isActive: true },
           transaction,
         });
         requireThat(questions.length >= count, "insufficient_questions", 409);
@@ -319,13 +319,19 @@ export async function command(
         case "ranking:set-view": {
           teacher();
           requireThat(
-            ["QUESTION_FINISHED", "SHOWING_RANKING", "FINISHED"].includes(
-              game.status,
-            ),
+            [
+              "LOBBY",
+              "READY",
+              "QUESTION_ACTIVE",
+              "QUESTION_FINISHED",
+              "SHOWING_RANKING",
+            ].includes(game.status),
             "invalid_transition",
           );
-          if (game.status === "QUESTION_FINISHED")
-            await change("SHOWING_RANKING");
+          requireThat(
+            data.view === "teams" || data.view === "hidden",
+            "invalid_ranking_view",
+          );
           await game.update(
             { rankingView: String(data.view) },
             { transaction },
@@ -539,20 +545,6 @@ export async function snapshot(
             id: t.id,
             name: t.name,
             ...stats(visibleAnswers.filter((a) => a.teamId === t.id)),
-          }))
-          .sort(order),
-        individualRanking: players
-          .map((p) => ({
-            id: p.id,
-            name: p.name,
-            avatar: p.avatar,
-            team:
-              teams.find(
-                (t) => t.leftPlayerId === p.id || t.rightPlayerId === p.id,
-              )?.name || "Espectador",
-            ...stats(
-              visibleAnswers.filter((a) => a.answeredByPlayerId === p.id),
-            ),
           }))
           .sort(order),
       };

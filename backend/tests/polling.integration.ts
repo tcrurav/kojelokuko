@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { io, Socket } from "socket.io-client";
+import { activateTestTeacher } from "./admin-session";
 import type { State, Game } from "../../frontend/src/types";
 const base = process.env.TEST_URL || "http://localhost";
 test(
@@ -102,7 +103,17 @@ async function http<T>(path: string, body?: unknown, token?: string) {
     },
     body: body ? JSON.stringify(body) : undefined,
   });
-  return { status: response.status, data: (await response.json()) as T };
+  const result = (await response.json()) as T;
+  if (path === "/auth/register" && response.status === 201) {
+    const credentials = body as { email: string; password: string };
+    await activateTestTeacher(base, credentials.email);
+    const login = await http<T>("/auth/login", {
+      email: credentials.email,
+      password: credentials.password,
+    });
+    return { status: 201, data: login.data };
+  }
+  return { status: response.status, data: result };
 }
 function emit(
   socket: Socket,
@@ -353,18 +364,20 @@ test(
         assert.ok(finished.question?.correctOption);
         assert.equal(finished.results?.attempts, round === 2 ? 0 : 2);
         assert.equal(
-          (await emit(teacher, "ranking:set-view", { view: "individual" })).ok,
-          true,
-        );
-        const ranking = await state(
-          teacher,
-          (s) => s.game.rankingView === "individual",
+          (await emit(teacher, "ranking:set-view", { view: "individual" }))
+            .error,
+          "invalid_input",
         );
         assert.equal(
-          ranking.individualRanking.reduce((sum, r) => sum + r.points, 0),
-          ranking.teamRanking.reduce((sum, r) => sum + r.points, 0),
+          (await emit(teacher, "ranking:set-view", { view: "teams" })).ok,
+          true,
         );
-        await emit(teacher, "ranking:set-view", { view: "teams" });
+        await state(teacher, (s) => s.game.rankingView === "teams");
+        assert.equal(
+          (await emit(teacher, "ranking:set-view", { view: "hidden" })).ok,
+          true,
+        );
+        await state(teacher, (s) => s.game.rankingView === "hidden");
       }
       assert.equal((await emit(teacher, "game:finish")).ok, true);
       const final = await state(teacher, (s) => s.game.status === "FINISHED");

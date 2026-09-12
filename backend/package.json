@@ -8,7 +8,7 @@
     "test": "tsx --test tests/*.test.ts",
     "db:migrate": "sequelize-cli db:migrate",
     "db:seed": "sequelize-cli db:seed:all",
-    "test:integration": "tsx --test tests/polling.integration.ts"
+    "test:integration": "tsx --test --test-concurrency=1 tests/*.integration.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

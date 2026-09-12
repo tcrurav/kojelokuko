@@ -7,9 +7,17 @@ import { z } from "zod";
 import { UniqueConstraintError } from "sequelize";
 import { db, Teacher, Player, Game } from "./db";
 import { AppError, requireThat } from "./domain";
+import {
+  requireActiveAccount,
+  requireAdministrator,
+  listTeachers,
+  changeTeacher,
+} from "./administration";
 import { createGame, join, hash, Identity, snapshot } from "./services";
 import {
   createQuestion,
+  setQuestionActive,
+  questionActivationSchema,
   updateQuestion,
   deleteQuestion,
   getQuestion,
@@ -62,13 +70,17 @@ export async function authenticate(
       "unauthorized",
       401,
     );
-    requireThat(
+    const account = requireActiveAccount(
       await Teacher.findByPk(Number(payload.sub)),
+    );
+    requireThat(
+      (payload.sessionVersion ?? 0) === account.sessionVersion,
       "unauthorized",
       401,
     );
     return { kind: "teacher", id: Number(payload.sub) };
-  } catch {
+  } catch (error) {
+    if (error instanceof AppError) throw error;
     throw new AppError("unauthorized", 401);
   }
 }
@@ -123,19 +135,14 @@ app.post(
   wrap(async (req, res) => {
     const data = credentials
       .extend({ name: z.string().trim().min(1).max(60) })
+      .strict()
       .parse(req.body);
     const teacher = await Teacher.create({
       name: data.name,
       email: data.email,
       passwordHash: await bcrypt.hash(data.password, 12),
     });
-    res.status(201).json({
-      token: jwt.sign({ kind: "teacher" }, secret(), {
-        subject: String(teacher.id),
-        expiresIn: 28800,
-      }),
-      name: teacher.name,
-    });
+    res.status(201).json({ name: teacher.name, pendingActivation: true });
   }),
 );
 app.post(
@@ -144,16 +151,24 @@ app.post(
     const data = credentials.parse(req.body);
     const teacher = await Teacher.findOne({ where: { email: data.email } });
     requireThat(
-      teacher && (await bcrypt.compare(data.password, teacher.passwordHash)),
+      teacher &&
+        !teacher.deletedAt &&
+        (await bcrypt.compare(data.password, teacher.passwordHash)),
       "invalid_credentials",
       401,
     );
+    requireActiveAccount(teacher);
     res.json({
-      token: jwt.sign({ kind: "teacher" }, secret(), {
-        subject: String(teacher.id),
-        expiresIn: 28800,
-      }),
+      token: jwt.sign(
+        { kind: "teacher", sessionVersion: teacher.sessionVersion },
+        secret(),
+        {
+          subject: String(teacher.id),
+          expiresIn: 28800,
+        },
+      ),
       name: teacher.name,
+      role: teacher.role,
     });
   }),
 );
@@ -169,6 +184,37 @@ const teacherOnly = async (req: Request) => {
 };
 const questionId = (req: Request) =>
   z.coerce.number().int().positive().parse(req.params.id);
+app.get(
+  "/api/admin/teachers",
+  wrap(async (req, res) => {
+    const who = await teacherOnly(req);
+    const query = z
+      .object({
+        search: z.string().trim().max(120).default(""),
+        page: z.coerce.number().int().min(1).max(100000).default(1),
+      })
+      .parse(req.query);
+    res.json(await listTeachers(who.id, query.search, query.page));
+  }),
+);
+app.put(
+  "/api/admin/teachers/:id",
+  wrap(async (req, res) => {
+    const who = await teacherOnly(req);
+    await requireAdministrator(who.id);
+    const data = z.object({ isActive: z.boolean() }).strict().parse(req.body);
+    await changeTeacher(who.id, questionId(req), data.isActive);
+    res.json({ ok: true });
+  }),
+);
+app.delete(
+  "/api/admin/teachers/:id",
+  wrap(async (req, res) => {
+    const who = await teacherOnly(req);
+    await changeTeacher(who.id, questionId(req), null);
+    res.json({ ok: true });
+  }),
+);
 app.get(
   "/api/questions",
   wrap(async (req, res) => {
@@ -189,6 +235,16 @@ app.post(
   wrap(async (req, res) => {
     await teacherOnly(req);
     res.status(201).json(await createQuestion(questionSchema.parse(req.body)));
+  }),
+);
+app.put(
+  "/api/questions/:id/activation",
+  wrap(async (req, res) => {
+    await teacherOnly(req);
+    const data = questionActivationSchema.parse(req.body);
+    res.json(
+      await setQuestionActive(questionId(req), data.version, data.isActive),
+    );
   }),
 );
 app.put(
@@ -216,7 +272,12 @@ app.get(
     const who = await identity(req);
     requireThat(who.kind === "teacher", "forbidden", 403);
     const teacher = await Teacher.findByPk(who.id);
-    res.json({ id: teacher?.id, name: teacher?.name, email: teacher?.email });
+    res.json({
+      id: teacher?.id,
+      name: teacher?.name,
+      email: teacher?.email,
+      role: teacher?.role,
+    });
   }),
 );
 app.get(

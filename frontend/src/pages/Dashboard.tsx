@@ -8,11 +8,15 @@ export default function Dashboard() {
   const [games, setGames] = useState<Game[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [admin, setAdmin] = useState(false);
   const [available, setAvailable] = useState<number | null>(null);
   const navigate = useNavigate();
   useEffect(() => {
+    void api<{ role: string }>("/auth/me")
+      .then((me) => setAdmin(me.role === "admin"))
+      .catch(() => undefined);
     void api<QuestionList>("/questions")
-      .then((data) => setAvailable(data.total))
+      .then((data) => setAvailable(data.activeTotal))
       .catch((e) => setError(e.message));
     void api<Game[]>("/games")
       .then(setGames)
@@ -38,12 +42,13 @@ export default function Dashboard() {
         </button>
       </div>
       <div className="card bank-access">
+        {admin && <Link to="/admin">Administrar profesores →</Link>}
         <div>
           <h2>Preguntas y respuestas</h2>
           <p>
             {available === null
               ? "Consulta y prepara tu banco de preguntas."
-              : `${available} preguntas disponibles. Crea, revisa y edita los próximos retos.`}
+              : `${available} preguntas activas disponibles. Crea, revisa y edita los próximos retos.`}
           </p>
         </div>
         <Link className="button-link" to="/teacher/questions">
@@ -73,6 +78,7 @@ export default function Dashboard() {
           Preguntas
           <select
             name="count"
+            aria-describedby="suggested-rounds"
             key={available}
             disabled={!available}
             defaultValue={Math.min(5, available ?? 5)}
@@ -81,7 +87,6 @@ export default function Dashboard() {
               <option key={i + 1}>{i + 1}</option>
             ))}
           </select>
-          <small>Rondas sugeridas: 5 · 10 · 15 · 20</small>
         </label>
         <label>
           Segundos por pregunta
@@ -92,6 +97,9 @@ export default function Dashboard() {
           </select>
         </label>
         <button disabled={busy || !available}>Crear partida →</button>
+        <small id="suggested-rounds" className="config-help">
+          Rondas sugeridas: 5 · 10 · 15 · 20
+        </small>
       </form>
       <ErrorBox message={error} />
       <h2>Tus partidas</h2>
