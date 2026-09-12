@@ -19,8 +19,7 @@ export default function Home() {
           <p>
             El juego de programación que se juega en pareja.
             <br />
-            Una persona a la izquierda. Otra a la derecha. ¿Os ponéis de
-            acuerdo?
+            Una persona a la izquierda. Otra a la derecha. ¿se ponen de acuerdo?
           </p>
         </div>
         <img

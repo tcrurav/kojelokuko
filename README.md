@@ -4,9 +4,9 @@ Competición presencial de programación por parejas. Un profesor dirige el ritm
 
 ## Arranque con Docker
 
-1. Copia `.env.example` a `.env` y cambia las tres contraseñas/secretos por valores aleatorios distintos. `JWT_SECRET` necesita al menos 32 caracteres.
+1. Copia `.env.example` a `.env` y cambia las contraseñas/secretos por valores aleatorios distintos. `JWT_SECRET` necesita al menos 32 caracteres. Configura `ADMIN_EMAIL`, `ADMIN_PASSWORD` (aleatoria, al menos 16 caracteres) y opcionalmente `ADMIN_NAME`.
 2. Ejecuta `docker compose up -d --build`.
-3. Abre `http://localhost`. Registra una cuenta de profesor; no hay credenciales predeterminadas.
+3. Abre `http://localhost/teacher/login` con las credenciales configuradas: el administrador accede a `/admin`. No hay contraseña predeterminada.
 
 Caddy es el único servicio publicado. MySQL conserva sus datos en `mysql_data`; backend y DB solo están en la red interna. El frontend se compila dentro de la imagen de Caddy y se sirve como SPA. El backend espera el healthcheck MySQL y ejecuta migraciones y seeders Sequelize antes de arrancar. Se despliega **una sola instancia backend**.
 
@@ -35,11 +35,23 @@ La prueba de integración cubre registro/login, autorización, cinco preguntas, 
 
 ## Uso en el aula
 
+En «Gestionar preguntas», cada pregunta dispone de un interruptor para activarla o desactivarla en el banco compartido. Solo las activas se seleccionan para nuevas partidas; las partidas ya creadas mantienen su copia. Las preguntas existentes y las nuevas empiezan activas. El formulario de creación muestra el número de preguntas activas disponibles. Los cambios de activación usan el mismo control de versión que la edición para detectar modificaciones simultáneas.
+
+### Administración de profesores
+
+El administrador se crea al arrancar el backend, después de las migraciones, con las variables `ADMIN_EMAIL`, `ADMIN_PASSWORD` y `ADMIN_NAME` del `.env` local (excluido de Git y Docker build). El arranque es idempotente: no cambia contraseñas ni eleva una cuenta de profesor existente. Si el email ya pertenece a un profesor, el arranque informa de `admin_email_already_used` y debe elegirse otro email. Después de la primera creación pueden retirarse ambas variables de credenciales; la cuenta permanece en MySQL.
+
+Los profesores existentes conservan acceso tras la migración; los nuevos registros quedan pendientes de aprobación y no reciben JWT. En `/admin` se pueden buscar y paginar cuentas, activar, desactivar y confirmar su borrado. Las cuentas administrativas están protegidas frente a estas acciones. El enlace «Administrar profesores» también aparece en el dashboard del administrador.
+
+Desactivar revoca los JWT y desconecta las sesiones Socket.IO del profesor. Reactivar requiere un nuevo login. Borrar elimina el acceso y anonimiza nombre, email y contraseña; conserva una referencia interna para el historial de partidas. Los alumnos de partidas existentes no se eliminan. Las contraseñas nunca se devuelven por API ni se imprimen en logs.
+
+Las pruebas de integración requieren las credenciales del administrador en el entorno o `.env`: `npm run test:integration`. Incluyen aprobación, permisos, revocación de sesiones y borrado con una partida asociada. Las pruebas de aula activan sus propias cuentas de prueba con ese administrador. Ejecutarlas únicamente en un entorno de pruebas.
+
 El profesor crea una partida (1–20 preguntas y 10–120 segundos), proyecta el código y espera equipos. Cada jugador invita a la persona de al lado indicando su posición; el destinatario confirma su rol. Ambos pueden cambiar el nombre del equipo en el lobby. Al iniciar con jugadores sin pareja se pide confirmación y pasan a espectadores.
 
 El profesor inicia cada pregunta manualmente. La pregunta cierra al agotarse el tiempo, al responder todos los equipos o mediante el control del profesor. Hasta ese momento se confirma recepción, pero no se revela corrección ni puntuación. Después se muestran explicación y estadísticas, se elige clasificación y se inicia la siguiente. Tras la última, el profesor muestra el podio.
 
-Las contribuciones individuales corresponden a los puntos de las respuestas ejecutadas por cada persona, no a una puntuación separada del equipo. Desempates: puntos, aciertos, menor tiempo correcto acumulado e ID estable.
+La clasificación individual está desactivada. El interruptor «Ranking por equipos tras cada pregunta» comienza apagado y se sincroniza entre profesor y alumnos. Su valor se conserva al recargar. Al activarlo, el ranking aparece junto a los resultados tras cada pregunta. Se puede avanzar con el ranking oculto; el podio final sigue disponible. Desempates: puntos, aciertos, menor tiempo correcto acumulado e ID estable.
 
 ## Sesiones y consistencia
 

@@ -75,6 +75,10 @@ Puede ajustarse sin romper la separación de responsabilidades.
 ## 4. Modelo de datos
 
 ### Teacher
+- `role` ENUM `teacher|admin`, por defecto `teacher`.
+- `isActive` BOOLEAN: registros nuevos inactivos; profesores previos activos.
+- `sessionVersion`: incrementado al cambiar activación/borrar, validado contra JWT.
+- `deletedAt`: borrado lógico con anonimización de nombre/email/hash para conservar FKs de partidas.
 - `id`
 - `name`
 - `email` UNIQUE
@@ -121,6 +125,7 @@ No persistir `socket.id` como identidad principal.
 Validar además que ambos jugadores pertenecen al mismo `gameId`.
 
 ### Question
+- `isActive` BOOLEAN NOT NULL DEFAULT true, añadido mediante migración `202609120004-question-activation.cjs`.
 - `id`
 - `statement`
 - `leftOption`
@@ -184,6 +189,10 @@ Puede sustituirse por estado efímero si se garantiza correctamente la consisten
 Las relaciones Team↔Player expresan roles izquierdo/derecho.
 
 ## 6. Autenticación
+
+La administración usa el mismo JWT de cuenta y consulta en MySQL el rol y la activación, sin confiar en roles enviados por clientes. `GET /api/admin/teachers` lista únicamente profesores no borrados con búsqueda y paginación de 25; `PUT /api/admin/teachers/:id` acepta solo `{isActive:boolean}`; `DELETE` anonimiza y desactiva. Las mutaciones bloquean la cuenta objetivo en una transacción y rechazan administradores. Una notificación interna tras commit desconecta sus sockets; cada comando y publicación Socket.IO vuelve a validar la cuenta y la versión del JWT.
+
+`ensureAdministrator` crea la cuenta inicial desde variables de entorno validadas, con bcrypt, después de migraciones. No existe registro administrativo público ni contraseña por defecto. La migración `202609120003-teacher-administration.cjs` preserva acceso de profesores previos y exige aprobación para nuevos registros.
 
 ### Profesor
 REST:
@@ -305,6 +314,8 @@ En profesor, mostrar transporte efectivo consultando `socket.io.engine.transport
 
 ## 12. Flujo de creación de partida
 
+La selección excluye preguntas borradas y desactivadas (`deletedAt IS NULL AND isActive = true`). `PUT /api/questions/:id/activation` requiere profesor activo y `{version, isActive}` validado con Zod; bloquea la fila y aumenta la versión, compartida con edición y borrado. El listado conserva preguntas activas/desactivadas y devuelve `activeTotal` global para configurar partidas. El cambio de activación no modifica los snapshots `GameQuestion` existentes.
+
 Transacción/servicio:
 1. validar configuración;
 2. generar código;
@@ -413,7 +424,9 @@ Equipo:
 - count correctas;
 - tiempos correctos para desempate.
 
-Individual:
+La clasificación individual está desactivada. `Game.rankingView` guarda `hidden` (por defecto) o `teams`. El comando autorizado `ranking:set-view` modifica esta preferencia sin cambiar la fase. `QUESTION_FINISHED` permite pasar directamente a `QUESTION_ACTIVE` o `FINISHED`. El frontend muestra el ranking habilitado junto a los resultados; el podio final siempre está disponible.
+
+Individual (referencia histórica, sin cálculo ni publicación):
 - suma de `scoreAwarded` de TeamAnswers donde `answeredByPlayerId = player.id`;
 - respuestas lanzadas;
 - aciertos ejecutados.

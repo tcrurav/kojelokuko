@@ -341,6 +341,13 @@ button:disabled {
   align-items: end;
   margin-bottom: 45px;
 }
+.config select,
+.config > button {
+  height: 58px;
+}
+.config-help {
+  grid-column: 1 / -1;
+}
 .error {
   padding: 16px;
   background: #572c40;
@@ -447,6 +454,13 @@ button:disabled {
   background: #171b35ee;
   border-top: 1px solid #ffffff30;
   margin-top: 30px;
+}
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
 }
 .podium {
   display: grid;

@@ -24,6 +24,10 @@ La interfaz debe sentirse como un juego educativo moderno, atractiva y clara, no
 
 ## 4. Registro y login del profesor
 
+Los nuevos registros quedan pendientes de activación por un administrador y no reciben sesión hasta ser aprobados. Los profesores existentes conservan su acceso al introducir esta función.
+
+El administrador inicia sesión mediante el mismo formulario y accede a `/admin`. Puede buscar profesores por nombre/email, paginar, activar, desactivar y borrar con confirmación. Desactivar revoca las sesiones existentes; reactivar requiere un nuevo login. Borrar anonimiza los datos de acceso, mantiene el historial de partidas y no permite restaurar la cuenta desde el panel. Las cuentas de administrador están protegidas. No se puede obtener el rol administrativo mediante registro público.
+
 Datos mínimos:
 - nombre;
 - email;
@@ -32,6 +36,8 @@ Datos mínimos:
 Permitir registro, login y logout. Las rutas privadas del profesor requieren autenticación.
 
 ## 5. Creación de partida
+
+El banco compartido permite a profesores activar y desactivar preguntas sin eliminarlas. Las existentes y las nuevas son activas por defecto. Las desactivadas siguen visibles y editables en gestión, pero solo las activas se sortean para nuevas partidas. El número disponible del formulario cuenta únicamente activas. Las partidas ya creadas mantienen su selección y contenido.
 
 Desde su dashboard, el profesor crea una partida indicando:
 - número de preguntas (entre 1 y 20; ofrecer presets 5, 10, 15 y 20);
@@ -199,6 +205,8 @@ La fórmula vive solo en backend y debe estar aislada para poder cambiarla.
 
 ## 18. Clasificación por equipos
 
+El profesor dispone de un interruptor de ranking por equipos, apagado al crear la partida y persistido al recargar. Al activarlo, se muestra tras cada pregunta junto a la explicación para todos. Puede volver a ocultarlo y avanzar sin mostrar ranking. El podio final sigue disponible independientemente del interruptor.
+
 Después de cada pregunta, permitir mostrar:
 - posición;
 - avatares;
@@ -215,7 +223,7 @@ Desempates recomendados:
 
 ## 19. Clasificación individual
 
-El profesor puede alternar entre **Equipos** e **Individual**.
+La clasificación individual está desactivada: no se muestra ni se publica por API o Socket.IO. La siguiente descripción queda como referencia histórica, sin funcionalidad activa.
 
 Individual:
 - posición;
@@ -268,7 +276,7 @@ Mostrar:
 
 Controles:
 - **Clasificación por equipos**
-- **Clasificación individual**
+- **Ranking por equipos tras cada pregunta: activado/desactivado**
 - **Siguiente pregunta**
 
 El profesor decide cuándo continuar.
@@ -278,7 +286,7 @@ El profesor decide cuándo continuar.
 Tras la última pregunta:
 - podio de equipos (1.º, 2.º, 3.º);
 - clasificación completa;
-- opción de clasificación individual;
+- solo clasificación por equipos;
 - mensaje celebratorio;
 - volver al dashboard.
 
@@ -400,7 +408,7 @@ Debe ser posible:
 16. mostrar feedback;
 17. cerrar pregunta por respuesta/tiempo según el flujo definido;
 18. mostrar explicación;
-19. alternar ranking de equipos/individual;
+19. activar y ocultar ranking por equipos;
 20. mostrar comentarios;
 21. avanzar manualmente;
 22. mostrar podio final;

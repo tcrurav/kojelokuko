@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { activateTestTeacher } from "../backend/tests/admin-session";
 test("profesor y dos alumnos completan una ronda con teclado y botón móvil", async ({
   browser,
   page,
@@ -13,9 +14,18 @@ test("profesor y dos alumnos completan una ronda con teclado y botón móvil", a
   await page.getByRole("link", { name: /Soy profesor/ }).click();
   await page.getByRole("link", { name: /Crear una cuenta/ }).click();
   await page.getByLabel("Nombre", { exact: true }).fill("Docente de prueba");
-  await page.getByLabel("Email").fill(`browser-${Date.now()}@example.test`);
+  const email = `browser-${Date.now()}@example.test`;
+  await page.getByLabel("Email").fill(email);
   await page.getByLabel("Contraseña").fill("Browser-test-12345");
   await page.getByRole("button", { name: "Crear cuenta" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Cuenta creada" }),
+  ).toBeVisible();
+  await activateTestTeacher(new URL(page.url()).origin, email);
+  await page.getByRole("link", { name: "Volver al acceso" }).click();
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Contraseña").fill("Browser-test-12345");
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await page.getByRole("combobox", { name: /^Preguntas/ }).selectOption("2");
   await page.getByLabel("Segundos por pregunta").selectOption("30");
   await page.getByRole("button", { name: "Crear partida" }).click();
@@ -82,26 +92,24 @@ test("profesor y dos alumnos completan una ronda con teclado y botón móvil", a
     await b.reload();
     await expect(b.locator(".role")).toContainText("NEGRO / DERECHA");
     await expect(b.locator(".feedback")).toContainText("Respondió");
-    await page
-      .getByRole("button", { name: "Clasificación por equipos" })
-      .click();
+    await expect(page.getByRole("switch")).not.toBeChecked();
+    await expect(page.locator(".rankings")).toHaveCount(0);
+    await page.getByRole("switch", { name: /Ranking por equipos/ }).click();
+    await expect(a.locator(".rankings")).toBeVisible();
     await page.getByRole("button", { name: "Siguiente pregunta" }).click();
     await b.getByRole("button", { name: "RESPONDER COMO NEGRO" }).click();
     await expect(b.locator(".feedback")).toContainText("Beto");
-    await page
-      .getByRole("button", { name: "Clasificación por equipos" })
-      .click();
+    await expect(page.locator(".rankings")).toBeVisible();
+    await page.getByRole("switch", { name: /Ranking por equipos/ }).click();
+    await expect(a.locator(".rankings")).toHaveCount(0);
     await page.getByRole("button", { name: "Mostrar podio final" }).click();
     await expect(
       page.getByRole("heading", { name: "¡Un aplauso para el aula!" }),
     ).toBeVisible();
     await page.screenshot({ path: "test-results/final.png", fullPage: true });
-    await page
-      .getByRole("button", { name: "Clasificación individual" })
-      .click();
     await expect(
       page.getByRole("heading", { name: "Contribución individual" }),
-    ).toBeVisible();
+    ).toHaveCount(0);
     assertNoErrors();
   } finally {
     await ctxA.close();

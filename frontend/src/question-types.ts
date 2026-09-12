@@ -8,10 +8,12 @@ export interface QuestionInput {
   difficulty: string;
 }
 export interface BankQuestion extends QuestionInput {
+  isActive: boolean;
   id: number;
   version: number;
 }
 export interface QuestionList {
+  activeTotal: number;
   items: BankQuestion[];
   total: number;
   page: number;

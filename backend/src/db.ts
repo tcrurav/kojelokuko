@@ -22,6 +22,9 @@ export interface Row {
   name: string;
   email: string;
   passwordHash: string;
+  role: "teacher" | "admin";
+  isActive: boolean;
+  sessionVersion: number;
   teacherId: number;
   gameId: number;
   code: string;
@@ -95,6 +98,18 @@ export const Teacher = model("Teacher", {
   name: str,
   email: { ...str, unique: true },
   passwordHash: str,
+  role: {
+    type: D.ENUM("teacher", "admin"),
+    allowNull: false,
+    defaultValue: "teacher",
+  },
+  isActive: { type: D.BOOLEAN, allowNull: false, defaultValue: false },
+  sessionVersion: {
+    type: D.INTEGER.UNSIGNED,
+    allowNull: false,
+    defaultValue: 0,
+  },
+  deletedAt: { type: D.DATE(3), allowNull: true },
 });
 export const Game = model("Game", {
   teacherId: integer,
@@ -117,7 +132,7 @@ export const Game = model("Game", {
   questionExpiresAt: { type: D.DATE(3) },
   startedAt: { type: D.DATE(3) },
   finishedAt: { type: D.DATE(3) },
-  rankingView: { type: D.STRING, defaultValue: "teams" },
+  rankingView: { type: D.STRING, defaultValue: "hidden" },
 });
 export const Player = model("Player", {
   gameId: integer,
@@ -137,6 +152,7 @@ export const TeamMember = model("TeamMember", {
   side: { type: D.ENUM("LEFT", "RIGHT"), allowNull: false },
 });
 export const Question = model("Question", {
+  isActive: { type: D.BOOLEAN, allowNull: false, defaultValue: true },
   deletedAt: { type: D.DATE(3), allowNull: true, defaultValue: null },
   version: { type: D.INTEGER.UNSIGNED, allowNull: false, defaultValue: 0 },
   statement: { type: D.TEXT, allowNull: false },
