@@ -54,7 +54,7 @@ export async function createGame(
     try {
       return await db.transaction(async (transaction) => {
         const questions = await Question.findAll({
-          where: { deletedAt: null },
+          where: { deletedAt: null, isActive: true },
           transaction,
         });
         requireThat(questions.length >= count, "insufficient_questions", 409);

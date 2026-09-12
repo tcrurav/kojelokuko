@@ -1,6 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { Game, Teacher, Player, Team, TeamAnswer } from "../src/db";
+import { Game, Teacher, Player, Team, TeamAnswer, Question } from "../src/db";
+test("las preguntas nuevas y del seeder se activan por defecto", () => {
+  assert.equal(Question.build().isActive, true);
+});
 test("las partidas ocultan el ranking inicialmente", () => {
   assert.equal(Game.getAttributes().rankingView.defaultValue, "hidden");
 });

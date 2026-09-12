@@ -3,6 +3,7 @@ import { Server } from "socket.io";
 import { z } from "zod";
 import { app, authenticate, errorPayload } from "./app";
 import { db, Game } from "./db";
+import { accountEvents, ensureAdministrator } from "./administration";
 import { command, snapshot, Identity, expire, gameEvents } from "./services";
 const http = createServer(app);
 const io = new Server(http, {
@@ -46,6 +47,15 @@ io.use((socket, next) => {
   })().catch(() => next(new Error("unauthorized")));
 });
 const publications = new Map<number, Promise<void>>();
+accountEvents.on("changed", (id: number) => {
+  for (const socket of io.sockets.sockets.values()) {
+    const who = socket.data.identity as Identity;
+    if (who.kind === "teacher" && who.id === id) {
+      socket.emit("game:error", { error: "unauthorized" });
+      socket.disconnect(true);
+    }
+  }
+});
 gameEvents.on("expired", (gameId: number) => {
   void publish(gameId).catch(() => console.error("expiry_publish_failed"));
 });
@@ -69,6 +79,10 @@ async function publishSnapshot(gameId: number) {
   await Promise.all(
     sockets.map(async (s) => {
       try {
+        await authenticate(
+          String(s.handshake.auth.token),
+          String(s.handshake.auth.kind),
+        );
         s.emit(
           "game:state",
           await snapshot(s.data.identity, gameId, connected),
@@ -139,6 +153,7 @@ async function start() {
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32)
     throw new Error("Set JWT_SECRET (32+ characters)");
   await db.authenticate();
+  await ensureAdministrator();
   http.listen(Number(process.env.PORT || 3000), () =>
     console.info("server_ready"),
   );

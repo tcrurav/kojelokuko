@@ -24,6 +24,10 @@ La interfaz debe sentirse como un juego educativo moderno, atractiva y clara, no
 
 ## 4. Registro y login del profesor
 
+Los nuevos registros quedan pendientes de activación por un administrador y no reciben sesión hasta ser aprobados. Los profesores existentes conservan su acceso al introducir esta función.
+
+El administrador inicia sesión mediante el mismo formulario y accede a `/admin`. Puede buscar profesores por nombre/email, paginar, activar, desactivar y borrar con confirmación. Desactivar revoca las sesiones existentes; reactivar requiere un nuevo login. Borrar anonimiza los datos de acceso, mantiene el historial de partidas y no permite restaurar la cuenta desde el panel. Las cuentas de administrador están protegidas. No se puede obtener el rol administrativo mediante registro público.
+
 Datos mínimos:
 - nombre;
 - email;
@@ -32,6 +36,8 @@ Datos mínimos:
 Permitir registro, login y logout. Las rutas privadas del profesor requieren autenticación.
 
 ## 5. Creación de partida
+
+El banco compartido permite a profesores activar y desactivar preguntas sin eliminarlas. Las existentes y las nuevas son activas por defecto. Las desactivadas siguen visibles y editables en gestión, pero solo las activas se sortean para nuevas partidas. El número disponible del formulario cuenta únicamente activas. Las partidas ya creadas mantienen su selección y contenido.
 
 Desde su dashboard, el profesor crea una partida indicando:
 - número de preguntas (entre 1 y 20; ofrecer presets 5, 10, 15 y 20);

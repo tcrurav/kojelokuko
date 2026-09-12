@@ -25,6 +25,12 @@ export const questionUpdateSchema = z
 export const questionVersionSchema = z
   .object({ version: z.number().int().nonnegative() })
   .strict();
+export const questionActivationSchema = z
+  .object({
+    version: z.number().int().nonnegative(),
+    isActive: z.boolean(),
+  })
+  .strict();
 export const questionQuerySchema = z
   .object({
     search: z.string().trim().max(120).default(""),
@@ -61,7 +67,16 @@ export async function listQuestions(search: string, page: number) {
     limit: 12,
     offset: (page - 1) * 12,
   });
-  return { items: result.rows, total: result.count, page, pageSize: 12 };
+  const activeTotal = await Question.count({
+    where: { deletedAt: null, isActive: true },
+  });
+  return {
+    items: result.rows,
+    total: result.count,
+    activeTotal,
+    page,
+    pageSize: 12,
+  };
 }
 export async function getQuestion(id: number) {
   const q = await Question.findOne({ where: { id, deletedAt: null } });
@@ -103,5 +118,21 @@ export async function deleteQuestion(id: number, version: number) {
       { deletedAt: new Date(), version: version + 1 },
       { transaction },
     );
+  });
+}
+export async function setQuestionActive(
+  id: number,
+  version: number,
+  isActive: boolean,
+) {
+  return db.transaction(async (transaction) => {
+    const q = await Question.findOne({
+      where: { id, deletedAt: null },
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+    requireThat(q, "question_not_found", 404);
+    requireThat(q.version === version, "question_conflict", 409);
+    return q.update({ isActive, version: version + 1 }, { transaction });
   });
 }

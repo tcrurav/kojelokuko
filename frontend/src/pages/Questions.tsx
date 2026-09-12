@@ -74,7 +74,9 @@ export default function Questions() {
           <span className="eyebrow">ESPACIO DEL PROFESOR</span>
           <h1>Banco de preguntas</h1>
           <p className="muted">
-            Un banco compartido para preparar el próximo debate.
+            Un banco compartido para preparar el próximo debate. Solo las
+            preguntas activas se incluyen en nuevas partidas. Las partidas ya
+            creadas conservan su selección.
           </p>
         </div>
         {!editor && (
@@ -117,7 +119,7 @@ export default function Questions() {
             </label>
             <p>
               {data
-                ? `${data.total} preguntas${query ? " encontradas" : " disponibles"}`
+                ? `${data.total} preguntas${query ? " encontradas" : " en el banco"} · ${data.activeTotal} activas en total`
                 : "Cargando banco…"}
             </p>
           </div>
@@ -153,6 +155,9 @@ export default function Questions() {
                     {data.items.map((q) => (
                       <article className="card bank-question" key={q.id}>
                         <div className="question-meta">
+                          <span className="badge">
+                            {q.isActive ? "Activa" : "Desactivada"}
+                          </span>
                           <span className="badge">{q.category}</span>
                           {q.difficulty && (
                             <span className="muted">{q.difficulty}</span>
@@ -196,11 +201,62 @@ export default function Questions() {
                           </p>
                         </details>
                         <div className="question-actions">
-                          <button className="secondary" onClick={() => open(q)}>
+                          <button
+                            className="secondary"
+                            role="switch"
+                            aria-checked={q.isActive}
+                            aria-label={`Pregunta activa: ${q.statement}`}
+                            disabled={busy}
+                            onClick={async () => {
+                              if (busy) return;
+                              setBusy(true);
+                              setNotice("");
+                              setError("");
+                              try {
+                                const updated = await api<BankQuestion>(
+                                  `/questions/${q.id}/activation`,
+                                  { version: q.version, isActive: !q.isActive },
+                                  "PUT",
+                                );
+                                setData((current) =>
+                                  current
+                                    ? {
+                                        ...current,
+                                        items: current.items.map((item) =>
+                                          item.id === updated.id
+                                            ? updated
+                                            : item,
+                                        ),
+                                        activeTotal:
+                                          current.activeTotal +
+                                          (updated.isActive ? 1 : -1),
+                                      }
+                                    : current,
+                                );
+                                setNotice(
+                                  updated.isActive
+                                    ? "Pregunta activada para nuevas partidas."
+                                    : "Pregunta desactivada. No aparecerá en nuevas partidas.",
+                                );
+                              } catch (e) {
+                                setError((e as Error).message);
+                              } finally {
+                                setBusy(false);
+                              }
+                            }}
+                          >
+                            {q.isActive ? "Desactivar" : "Activar"}
+                          </button>
+                          <button
+                            className="secondary"
+                            disabled={busy}
+                            onClick={() => open(q)}
+                          >
                             Editar
                           </button>
                           <button
                             className="danger"
+                            disabled={busy}
                             onClick={() => {
                               setDeleting(q);
                               setDeleteError("");
