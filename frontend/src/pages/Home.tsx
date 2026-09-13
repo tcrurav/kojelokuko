@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 const logoUrl = new URL(
-  "../assets/images/Logo_Kojelo_Kuko.png",
+  "../assets/images/Logo_Kojelo_Kuko_web.webp",
   import.meta.url,
 ).href;
 export default function Home() {

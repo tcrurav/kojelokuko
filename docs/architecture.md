@@ -314,6 +314,8 @@ En profesor, mostrar transporte efectivo consultando `socket.io.engine.transport
 
 ## 12. Flujo de creación de partida
 
+`POST /api/games` acepta `difficulty` opcional (texto de hasta 120 caracteres): omitirlo selecciona todos los niveles y una cadena vacía selecciona preguntas sin nivel. El servidor filtra por dificultad antes de sortear y comprueba disponibilidad dentro de la transacción. `GET /api/questions` incluye `difficulties` con recuentos globales de preguntas activas no borradas por nivel, independientes de la búsqueda y paginación. La selección queda congelada en `GameQuestion`, incluida la dificultad en su snapshot; no requiere cambios de esquema.
+
 La selección excluye preguntas borradas y desactivadas (`deletedAt IS NULL AND isActive = true`). `PUT /api/questions/:id/activation` requiere profesor activo y `{version, isActive}` validado con Zod; bloquea la fila y aumenta la versión, compartida con edición y borrado. El listado conserva preguntas activas/desactivadas y devuelve `activeTotal` global para configurar partidas. El cambio de activación no modifica los snapshots `GameQuestion` existentes.
 
 Transacción/servicio:
@@ -531,6 +533,8 @@ Scripts esperados:
 El arranque debe esperar a MySQL. Documentar si las migraciones se ejecutan automáticamente en entrypoint o mediante comando explícito. Evitar carreras entre varias instancias.
 
 Seeder: exactamente 20 preguntas iniciales, con `up` y `down` razonables e idempotencia controlada.
+
+El seeder adicional `202609130001-easy-questions.cjs` incorpora 20 preguntas de dificultad baja sin modificar el original. Omite IDs para que MySQL los asigne sin colisionar con preguntas creadas por profesores. Sequelize registra cada seeder ejecutado; el banco incluido suma 40 preguntas.
 
 ## 25. Seguridad
 
