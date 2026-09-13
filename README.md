@@ -35,6 +35,8 @@ La prueba de integración cubre registro/login, autorización, cinco preguntas, 
 
 ## Uso en el aula
 
+Al crear una partida, el profesor elige también la dificultad. El selector muestra los niveles con preguntas activas y su cantidad, además de «Todas las dificultades». El número de preguntas se ajusta al nivel elegido. Solo se sortean preguntas de ese nivel; si ya no hay suficientes, la creación se rechaza. «Sin especificar» agrupa las preguntas que no tienen dificultad asignada.
+
 En «Gestionar preguntas», cada pregunta dispone de un interruptor para activarla o desactivarla en el banco compartido. Solo las activas se seleccionan para nuevas partidas; las partidas ya creadas mantienen su copia. Las preguntas existentes y las nuevas empiezan activas. El formulario de creación muestra el número de preguntas activas disponibles. Los cambios de activación usan el mismo control de versión que la edición para detectar modificaciones simultáneas.
 
 ### Administración de profesores

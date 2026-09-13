@@ -13,6 +13,7 @@ export interface BankQuestion extends QuestionInput {
   version: number;
 }
 export interface QuestionList {
+  difficulties: { difficulty: string; count: number }[];
   activeTotal: number;
   items: BankQuestion[];
   total: number;

@@ -42,6 +42,7 @@ El banco compartido permite a profesores activar y desactivar preguntas sin elim
 Desde su dashboard, el profesor crea una partida indicando:
 - número de preguntas (entre 1 y 20; ofrecer presets 5, 10, 15 y 20);
 - tiempo por pregunta (por ejemplo 10, 15, 20 o 30 segundos).
+- dificultad: elegir un nivel con preguntas activas o «Todas las dificultades» (por defecto). Las preguntas sin nivel se agrupan como «Sin especificar». El número seleccionable se limita a las preguntas activas del nivel elegido, con un máximo de 20; el servidor rechaza la creación si no hay suficientes.
 
 Al crearla:
 - seleccionar aleatoriamente el número solicitado de preguntas de la batería;

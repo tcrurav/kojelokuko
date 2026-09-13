@@ -10,13 +10,25 @@ export default function Dashboard() {
   const [busy, setBusy] = useState(false);
   const [admin, setAdmin] = useState(false);
   const [available, setAvailable] = useState<number | null>(null);
+  const [difficulties, setDifficulties] = useState<
+    QuestionList["difficulties"]
+  >([]);
+  const [difficulty, setDifficulty] = useState<string | null>(null);
+  const eligible =
+    difficulty === null
+      ? available
+      : (difficulties.find((item) => item.difficulty === difficulty)?.count ??
+        0);
   const navigate = useNavigate();
   useEffect(() => {
     void api<{ role: string }>("/auth/me")
       .then((me) => setAdmin(me.role === "admin"))
       .catch(() => undefined);
     void api<QuestionList>("/questions")
-      .then((data) => setAvailable(data.activeTotal))
+      .then((data) => {
+        setAvailable(data.activeTotal);
+        setDifficulties(data.difficulties);
+      })
       .catch((e) => setError(e.message));
     void api<Game[]>("/games")
       .then(setGames)
@@ -59,12 +71,15 @@ export default function Dashboard() {
         className="card config"
         onSubmit={async (e) => {
           e.preventDefault();
+          if (busy || !eligible) return;
+          setError("");
           setBusy(true);
           const f = new FormData(e.currentTarget);
           try {
             const game = await api<Game>("/games", {
               questionCount: Number(f.get("count")),
               questionDurationSeconds: Number(f.get("duration")),
+              ...(difficulty === null ? {} : { difficulty }),
             });
             navigate("/teacher/games/" + game.id);
           } catch (e) {
@@ -75,15 +90,36 @@ export default function Dashboard() {
         }}
       >
         <label>
+          Dificultad
+          <select
+            name="difficulty"
+            value={JSON.stringify(difficulty)}
+            disabled={busy || available === null}
+            onChange={(e) =>
+              setDifficulty(JSON.parse(e.target.value) as string | null)
+            }
+          >
+            <option value="null">Todas las dificultades</option>
+            {difficulties.map((item) => (
+              <option
+                key={item.difficulty}
+                value={JSON.stringify(item.difficulty)}
+              >
+                {item.difficulty || "Sin especificar"} ({item.count})
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
           Preguntas
           <select
             name="count"
             aria-describedby="suggested-rounds"
-            key={available}
-            disabled={!available}
-            defaultValue={Math.min(5, available ?? 5)}
+            key={JSON.stringify([difficulty, eligible])}
+            disabled={busy || !eligible}
+            defaultValue={Math.min(5, eligible ?? 5)}
           >
-            {Array.from({ length: Math.min(20, available ?? 0) }, (_, i) => (
+            {Array.from({ length: Math.min(20, eligible ?? 0) }, (_, i) => (
               <option key={i + 1}>{i + 1}</option>
             ))}
           </select>
@@ -96,8 +132,11 @@ export default function Dashboard() {
             ))}
           </select>
         </label>
-        <button disabled={busy || !available}>Crear partida →</button>
+        <button disabled={busy || !eligible}>Crear partida →</button>
         <small id="suggested-rounds" className="config-help">
+          {eligible === null
+            ? "Cargando preguntas…"
+            : `${eligible} preguntas activas disponibles para esta dificultad.`}{" "}
           Rondas sugeridas: 5 · 10 · 15 · 20
         </small>
       </form>

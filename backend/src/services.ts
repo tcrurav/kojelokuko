@@ -49,12 +49,17 @@ export async function createGame(
   teacherId: number,
   count: number,
   duration: number,
+  difficulty?: string,
 ) {
   for (let attempt = 0; attempt < 8; attempt++)
     try {
       return await db.transaction(async (transaction) => {
         const questions = await Question.findAll({
-          where: { deletedAt: null, isActive: true },
+          where: {
+            deletedAt: null,
+            isActive: true,
+            ...(difficulty === undefined ? {} : { difficulty }),
+          },
           transaction,
         });
         requireThat(questions.length >= count, "insufficient_questions", 409);
