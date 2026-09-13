@@ -70,10 +70,18 @@ export async function listQuestions(search: string, page: number) {
   const activeTotal = await Question.count({
     where: { deletedAt: null, isActive: true },
   });
+  const difficultyCounts = await Question.count({
+    where: { deletedAt: null, isActive: true },
+    group: ["difficulty"],
+  });
   return {
     items: result.rows,
     total: result.count,
     activeTotal,
+    difficulties: difficultyCounts.map((row) => ({
+      difficulty: String(row.difficulty),
+      count: Number(row.count),
+    })),
     page,
     pageSize: 12,
   };

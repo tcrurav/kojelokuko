@@ -27,7 +27,7 @@ export const messages: Record<string, string> = {
   question_conflict:
     "Otro profesor ha cambiado esta pregunta. Vuelve a abrirla desde el listado antes de guardar o eliminar.",
   insufficient_questions:
-    "No hay suficientes preguntas activas. Reduce el número de la partida o activa más preguntas del banco.",
+    "No hay suficientes preguntas activas para la dificultad elegida. Reduce el número, elige otra dificultad o activa más preguntas de ese nivel.",
 };
 export const errorText = (code: string) =>
   messages[code] || "No se pudo completar la acción. Inténtalo de nuevo.";

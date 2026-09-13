@@ -10,7 +10,7 @@ Competición presencial de programación por parejas. Un profesor dirige el ritm
 
 Caddy es el único servicio publicado. MySQL conserva sus datos en `mysql_data`; backend y DB solo están en la red interna. El frontend se compila dentro de la imagen de Caddy y se sirve como SPA. El backend espera el healthcheck MySQL y ejecuta migraciones y seeders Sequelize antes de arrancar. Se despliega **una sola instancia backend**.
 
-El seeder contiene exactamente 20 preguntas. Sequelize registra su ejecución en DB, por lo que reiniciar no duplica preguntas. No se usa `sync()`. `db:seed:undo:all` solo debe emplearse sobre una base de desarrollo sin partidas que referencien esas preguntas.
+Los seeders contienen 40 preguntas: las 20 originales de dificultad media y 20 adicionales de dificultad baja, con situaciones sencillas para docentes con poca experiencia en programación. El seeder adicional se aplica también a instalaciones existentes mediante `npm run db:seed` o al arrancar el backend actualizado en Docker. Sequelize registra su ejecución en DB, por lo que reiniciar no duplica preguntas. No se usa `sync()`. `db:seed:undo:all` solo debe emplearse sobre una base de desarrollo sin partidas que referencien esas preguntas.
 
 ## Desarrollo
 
@@ -35,9 +35,13 @@ La prueba de integración cubre registro/login, autorización, cinco preguntas, 
 
 ## Uso en el aula
 
+Al crear una partida, el profesor elige también la dificultad. El selector muestra los niveles con preguntas activas y su cantidad, además de «Todas las dificultades». El número de preguntas se ajusta al nivel elegido. Solo se sortean preguntas de ese nivel; si ya no hay suficientes, la creación se rechaza. «Sin especificar» agrupa las preguntas que no tienen dificultad asignada.
+
 En «Gestionar preguntas», cada pregunta dispone de un interruptor para activarla o desactivarla en el banco compartido. Solo las activas se seleccionan para nuevas partidas; las partidas ya creadas mantienen su copia. Las preguntas existentes y las nuevas empiezan activas. El formulario de creación muestra el número de preguntas activas disponibles. Los cambios de activación usan el mismo control de versión que la edición para detectar modificaciones simultáneas.
 
 ### Administración de profesores
+
+Si el backend muestra `startup_failed invalid_admin_configuration`, revisa en el `.env` del servidor que `ADMIN_EMAIL` sea un email válido, `ADMIN_PASSWORD` tenga entre 16 y 72 caracteres (máximo 72 bytes UTF-8) y `ADMIN_NAME` tenga entre 1 y 60 caracteres. Deben configurarse email y contraseña juntos. El mensaje identifica el campo incorrecto sin revelar su valor. Después ejecuta `sudo docker compose up -d --build` para recrear el contenedor con la configuración nueva; un simple reinicio no actualiza sus variables de entorno.
 
 El administrador se crea al arrancar el backend, después de las migraciones, con las variables `ADMIN_EMAIL`, `ADMIN_PASSWORD` y `ADMIN_NAME` del `.env` local (excluido de Git y Docker build). El arranque es idempotente: no cambia contraseñas ni eleva una cuenta de profesor existente. Si el email ya pertenece a un profesor, el arranque informa de `admin_email_already_used` y debe elegirse otro email. Después de la primera creación pueden retirarse ambas variables de credenciales; la cuenta permanece en MySQL.
 
