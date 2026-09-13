@@ -462,6 +462,35 @@ button:disabled {
   gap: 12px;
   margin-top: 24px;
 }
+.admin-teachers {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  margin: 28px 0;
+}
+.admin-teacher {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 20px;
+}
+.admin-teacher-identity {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.admin-teacher-identity h2,
+.admin-teacher > .badge {
+  margin: 0;
+}
+.admin-teacher-identity p {
+  margin: 6px 0 0;
+}
+.admin-teacher > .admin-actions {
+  margin-top: 0;
+}
+.admin-teacher-confirmation {
+  grid-column: 1 / -1;
+}
 .podium {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -508,6 +537,13 @@ small {
   outline-offset: 4px;
 }
 @media (max-width: 650px) {
+  .admin-teacher {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .admin-teacher > .badge {
+    justify-self: start;
+  }
   header {
     padding: 20px;
   }
