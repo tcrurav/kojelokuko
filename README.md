@@ -39,6 +39,8 @@ En «Gestionar preguntas», cada pregunta dispone de un interruptor para activar
 
 ### Administración de profesores
 
+Si el backend muestra `startup_failed invalid_admin_configuration`, revisa en el `.env` del servidor que `ADMIN_EMAIL` sea un email válido, `ADMIN_PASSWORD` tenga entre 16 y 72 caracteres (máximo 72 bytes UTF-8) y `ADMIN_NAME` tenga entre 1 y 60 caracteres. Deben configurarse email y contraseña juntos. El mensaje identifica el campo incorrecto sin revelar su valor. Después ejecuta `sudo docker compose up -d --build` para recrear el contenedor con la configuración nueva; un simple reinicio no actualiza sus variables de entorno.
+
 El administrador se crea al arrancar el backend, después de las migraciones, con las variables `ADMIN_EMAIL`, `ADMIN_PASSWORD` y `ADMIN_NAME` del `.env` local (excluido de Git y Docker build). El arranque es idempotente: no cambia contraseñas ni eleva una cuenta de profesor existente. Si el email ya pertenece a un profesor, el arranque informa de `admin_email_already_used` y debe elegirse otro email. Después de la primera creación pueden retirarse ambas variables de credenciales; la cuenta permanece en MySQL.
 
 Los profesores existentes conservan acceso tras la migración; los nuevos registros quedan pendientes de aprobación y no reciben JWT. En `/admin` se pueden buscar y paginar cuentas, activar, desactivar y confirmar su borrado. Las cuentas administrativas están protegidas frente a estas acciones. El enlace «Administrar profesores» también aparece en el dashboard del administrador.

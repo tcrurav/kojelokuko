@@ -89,12 +89,13 @@ export async function changeTeacher(
 }
 
 // No default password and no elevation through public registration.
-export async function ensureAdministrator() {
-  if (!process.env.ADMIN_EMAIL && !process.env.ADMIN_PASSWORD) return;
+export function administratorConfiguration(env: NodeJS.ProcessEnv) {
+  if (!env.ADMIN_EMAIL && !env.ADMIN_PASSWORD) return null;
   const config = z
     .object({
       email: z
         .string()
+        .trim()
         .email()
         .max(120)
         .transform((s) => s.toLowerCase()),
@@ -106,13 +107,31 @@ export async function ensureAdministrator() {
       name: z.string().trim().min(1).max(60),
     })
     .safeParse({
-      email: process.env.ADMIN_EMAIL,
-      password: process.env.ADMIN_PASSWORD,
-      name: process.env.ADMIN_NAME || "Administrador",
+      email: env.ADMIN_EMAIL,
+      password: env.ADMIN_PASSWORD,
+      name: env.ADMIN_NAME || "Administrador",
     });
-  requireThat(config.success, "invalid_admin_configuration", 500);
+  if (!config.success) {
+    const requirements: Record<string, string> = {
+      email: "ADMIN_EMAIL: email valido, maximo 120 caracteres",
+      password:
+        "ADMIN_PASSWORD: obligatoria, entre 16 y 72 caracteres y maximo 72 bytes UTF-8",
+      name: "ADMIN_NAME: entre 1 y 60 caracteres",
+    };
+    const details = [
+      ...new Set(
+        config.error.issues.map((issue) => requirements[String(issue.path[0])]),
+      ),
+    ];
+    throw new Error("invalid_admin_configuration: " + details.join("; "));
+  }
+  return config.data;
+}
+export async function ensureAdministrator() {
+  const config = administratorConfiguration(process.env);
+  if (!config) return;
   const existing = await Teacher.findOne({
-    where: { email: config.data.email },
+    where: { email: config.email },
   });
   if (existing) {
     requireThat(
@@ -123,9 +142,9 @@ export async function ensureAdministrator() {
     return;
   }
   await Teacher.create({
-    name: config.data.name,
-    email: config.data.email,
-    passwordHash: await bcrypt.hash(config.data.password, 12),
+    name: config.name,
+    email: config.email,
+    passwordHash: await bcrypt.hash(config.password, 12),
     role: "admin",
     isActive: true,
   });
