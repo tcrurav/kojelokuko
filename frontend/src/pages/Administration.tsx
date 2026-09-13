@@ -139,11 +139,13 @@ export default function Administration() {
               {!data.teachers.length && (
                 <p>No hay profesores para esta búsqueda.</p>
               )}
-              <div className="grid">
+              <div className="admin-teachers">
                 {data.teachers.map((teacher) => (
-                  <article className="card" key={teacher.id}>
-                    <h2>{teacher.name}</h2>
-                    <p style={{ overflowWrap: "anywhere" }}>{teacher.email}</p>
+                  <article className="card admin-teacher" key={teacher.id}>
+                    <div className="admin-teacher-identity">
+                      <h2>{teacher.name}</h2>
+                      <p>{teacher.email}</p>
+                    </div>
                     <p className="badge">
                       {teacher.isActive ? "Activo" : "Desactivado / pendiente"}
                     </p>
@@ -165,7 +167,7 @@ export default function Administration() {
                       </button>
                     </div>
                     {deleting?.id === teacher.id && (
-                      <div role="alert" className="card">
+                      <div role="alert" className="card admin-teacher-confirmation">
                         <p>
                           ¿Borrar la cuenta de {teacher.name}? Se eliminarán sus
                           datos de acceso y se conservará el historial de
