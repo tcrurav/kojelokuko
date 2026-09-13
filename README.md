@@ -10,7 +10,7 @@ Competición presencial de programación por parejas. Un profesor dirige el ritm
 
 Caddy es el único servicio publicado. MySQL conserva sus datos en `mysql_data`; backend y DB solo están en la red interna. El frontend se compila dentro de la imagen de Caddy y se sirve como SPA. El backend espera el healthcheck MySQL y ejecuta migraciones y seeders Sequelize antes de arrancar. Se despliega **una sola instancia backend**.
 
-El seeder contiene exactamente 20 preguntas. Sequelize registra su ejecución en DB, por lo que reiniciar no duplica preguntas. No se usa `sync()`. `db:seed:undo:all` solo debe emplearse sobre una base de desarrollo sin partidas que referencien esas preguntas.
+Los seeders contienen 40 preguntas: las 20 originales de dificultad media y 20 adicionales de dificultad baja, con situaciones sencillas para docentes con poca experiencia en programación. El seeder adicional se aplica también a instalaciones existentes mediante `npm run db:seed` o al arrancar el backend actualizado en Docker. Sequelize registra su ejecución en DB, por lo que reiniciar no duplica preguntas. No se usa `sync()`. `db:seed:undo:all` solo debe emplearse sobre una base de desarrollo sin partidas que referencien esas preguntas.
 
 ## Desarrollo
 

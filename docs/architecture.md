@@ -532,6 +532,8 @@ El arranque debe esperar a MySQL. Documentar si las migraciones se ejecutan auto
 
 Seeder: exactamente 20 preguntas iniciales, con `up` y `down` razonables e idempotencia controlada.
 
+El seeder adicional `202609130001-easy-questions.cjs` incorpora 20 preguntas de dificultad baja sin modificar el original. Omite IDs para que MySQL los asigne sin colisionar con preguntas creadas por profesores. Sequelize registra cada seeder ejecutado; el banco incluido suma 40 preguntas.
+
 ## 25. Seguridad
 
 - bcrypt para passwords;

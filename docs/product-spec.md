@@ -294,6 +294,8 @@ No es necesaria revancha automática.
 
 ## 23. Batería inicial: exactamente 20 preguntas
 
+Ampliación: un segundo seeder añade 20 preguntas de dificultad `Baja` para docentes con poca experiencia en programación (40 en total). Usa lenguaje cotidiano, cálculos simples y situaciones de aula, sin exigir sintaxis ni vocabulario avanzado. Cada pregunta incluye dos opciones, una solución y una explicación breve.
+
 Crear mediante Seeder Sequelize. Todas en español, con dos alternativas plausibles, una sola correcta y explicación pedagógica. Dificultad accesible para docentes de informática con niveles heterogéneos.
 
 La selección inicial debe cubrir, de forma equilibrada:
