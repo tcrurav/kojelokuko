@@ -425,6 +425,9 @@ button:disabled {
   font-weight: 800;
   letter-spacing: 0.07em;
 }
+.choices > .option:only-child {
+  grid-column: 1 / -1;
+}
 .option h2 {
   margin-top: 24px;
 }

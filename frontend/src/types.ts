@@ -7,6 +7,7 @@ export interface Game {
   currentQuestionIndex: number;
   questionExpiresAt: string | null;
   rankingView: string;
+  showPartnerOption: boolean;
 }
 export interface Player {
   id: number;
@@ -45,8 +46,8 @@ export interface State {
   question: null | {
     id: number;
     statement: string;
-    leftOption: string;
-    rightOption: string;
+    leftOption: string | null;
+    rightOption: string | null;
     category: string;
     correctOption?: string;
     explanation?: string;

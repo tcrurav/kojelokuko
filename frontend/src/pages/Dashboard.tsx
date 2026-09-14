@@ -79,6 +79,7 @@ export default function Dashboard() {
             const game = await api<Game>("/games", {
               questionCount: Number(f.get("count")),
               questionDurationSeconds: Number(f.get("duration")),
+              showPartnerOption: f.get("showPartnerOption") === "true",
               ...(difficulty === null ? {} : { difficulty }),
             });
             navigate("/teacher/games/" + game.id);
@@ -131,6 +132,16 @@ export default function Dashboard() {
               <option key={n}>{n}</option>
             ))}
           </select>
+        </label>
+        <label className="config-help">
+          ¿Los jugadores pueden ver la opción de su compañero?
+          <select name="showPartnerOption" defaultValue="true" disabled={busy}>
+            <option value="true">Sí, ven las dos opciones</option>
+            <option value="false">No, cada jugador ve solo su opción</option>
+          </select>
+          <small>
+            Si eliges «No», tendrán que compartir sus opciones hablando.
+          </small>
         </label>
         <button disabled={busy || !eligible}>Crear partida →</button>
         <small id="suggested-rounds" className="config-help">
