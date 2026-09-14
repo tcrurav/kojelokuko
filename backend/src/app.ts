@@ -303,6 +303,7 @@ app.post(
         questionCount: z.number().int().min(1).max(20),
         questionDurationSeconds: z.number().int().min(10).max(120),
         difficulty: z.string().trim().max(120).optional(),
+        showPartnerOption: z.boolean().default(true),
       })
       .strict()
       .parse(req.body);
@@ -314,6 +315,7 @@ app.post(
           data.questionCount,
           data.questionDurationSeconds,
           data.difficulty,
+          data.showPartnerOption,
         ),
       );
   }),

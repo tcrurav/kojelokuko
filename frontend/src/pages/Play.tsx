@@ -4,6 +4,7 @@ import { io, Socket } from "socket.io-client";
 import { errorText, ignoresEnter } from "../api";
 import type { State } from "../types";
 import { ErrorBox } from "../components/ErrorBox";
+import { QuestionOptions } from "../components/QuestionOptions";
 export default function Play({ teacher = false }: { teacher?: boolean }) {
   const params = useParams();
   const [state, setState] = useState<State | null>(null);
@@ -16,6 +17,10 @@ export default function Play({ teacher = false }: { teacher?: boolean }) {
   const socket = useRef<Socket | null>(null);
   const sending = useRef(false);
   const [confirm, setConfirm] = useState(false);
+  const [hideTeacherOptions, setHideTeacherOptions] = useState(false);
+  useEffect(() => {
+    setHideTeacherOptions(false);
+  }, [params.id]);
   useEffect(() => {
     let token = localStorage.getItem("teacherToken") || "";
     let gameId = Number(params.id);
@@ -407,16 +412,26 @@ export default function Play({ teacher = false }: { teacher?: boolean }) {
                 )}
               </div>
               <h1 className="question">{question.statement}</h1>
-              <div className="choices">
-                <article className="option white">
-                  <span>← ⚪ BLANCO / IZQUIERDA</span>
-                  <h2>{question.leftOption}</h2>
-                </article>
-                <article className="option black">
-                  <span>⚫ NEGRO / DERECHA →</span>
-                  <h2>{question.rightOption}</h2>
-                </article>
-              </div>
+              {teacher && active && !game.showPartnerOption && (
+                <p className="muted">Cada jugador ve solo su opción.</p>
+              )}
+              {teacher && active && (
+                <button
+                  type="button"
+                  className="secondary"
+                  aria-pressed={hideTeacherOptions}
+                  onClick={() => setHideTeacherOptions((hidden) => !hidden)}
+                >
+                  {hideTeacherOptions
+                    ? "Mostrar respuestas en mi pantalla"
+                    : "Ocultar respuestas en mi pantalla"}
+                </button>
+              )}
+              {teacher && active && hideTeacherOptions ? (
+                <p role="status">Respuestas ocultas en esta pantalla. Hablad con vuestra pareja para decidir.</p>
+              ) : (
+                <QuestionOptions leftOption={question.leftOption} rightOption={question.rightOption} />
+              )}
               <p className="muted">
                 {state.answeredCount} / {state.teams.length} equipos han
                 respondido

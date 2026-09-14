@@ -37,6 +37,7 @@ export interface Row {
   startedAt: Date | null;
   finishedAt: Date | null;
   rankingView: string;
+  showPartnerOption: boolean;
   avatar: string;
   sessionTokenHash: string;
   leftPlayerId: number;
@@ -133,6 +134,7 @@ export const Game = model("Game", {
   startedAt: { type: D.DATE(3) },
   finishedAt: { type: D.DATE(3) },
   rankingView: { type: D.STRING, defaultValue: "hidden" },
+  showPartnerOption: { type: D.BOOLEAN, allowNull: false, defaultValue: true },
 });
 export const Player = model("Player", {
   gameId: integer,

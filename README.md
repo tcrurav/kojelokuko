@@ -35,6 +35,10 @@ La prueba de integración cubre registro/login, autorización, cinco preguntas, 
 
 ## Uso en el aula
 
+Durante una pregunta activa, el profesor dispone de «Ocultar respuestas en mi pantalla» / «Mostrar respuestas en mi pantalla» para controlar la proyección. Se mantiene su elección para las siguientes preguntas mientras permanezca en la pantalla; al cerrar cada pregunta se muestran las respuestas para comentarlas. Este control solo afecta a la pantalla del profesor.
+
+La creación permite elegir «¿Los jugadores pueden ver la opción de su compañero?». Con «No», cada jugador ve solo su opción mientras la pregunta está activa y debe hablar con su pareja para conocer la otra. Al cerrar la pregunta cada jugador sigue viendo solo su opción. Por defecto se ven las dos, también en partidas existentes. Aplica `npm run db:migrate` antes de arrancar la versión actualizada (Docker lo hace al iniciar). El profesor sigue viendo ambos textos: evita proyectarlos durante el debate si quieres mantenerlos ocultos.
+
 Al crear una partida, el profesor elige también la dificultad. El selector muestra los niveles con preguntas activas y su cantidad, además de «Todas las dificultades». El número de preguntas se ajusta al nivel elegido. Solo se sortean preguntas de ese nivel; si ya no hay suficientes, la creación se rechaza. «Sin especificar» agrupa las preguntas que no tienen dificultad asignada.
 
 En «Gestionar preguntas», cada pregunta dispone de un interruptor para activarla o desactivarla en el banco compartido. Solo las activas se seleccionan para nuevas partidas; las partidas ya creadas mantienen su copia. Las preguntas existentes y las nuevas empiezan activas. El formulario de creación muestra el número de preguntas activas disponibles. Los cambios de activación usan el mismo control de versión que la edición para detectar modificaciones simultáneas.

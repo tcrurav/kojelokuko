@@ -86,6 +86,7 @@ Puede ajustarse sin romper la separación de responsabilidades.
 - timestamps
 
 ### Game
+- `showPartnerOption` BOOLEAN NOT NULL DEFAULT true, añadido por `202609140001-partner-option-visibility.cjs`. Se valida como booleano al crear la partida. Cuando es false, el snapshot personalizado devuelve `null` en la opción ajena incluso después del cierre (ambas para espectadores); el profesor recibe ambos textos. HTTP y Socket.IO usan el mismo snapshot, también en reconexiones.
 - `id`
 - `teacherId` FK
 - `code`

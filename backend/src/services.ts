@@ -50,6 +50,7 @@ export async function createGame(
   count: number,
   duration: number,
   difficulty?: string,
+  showPartnerOption = true,
 ) {
   for (let attempt = 0; attempt < 8; attempt++)
     try {
@@ -73,6 +74,7 @@ export async function createGame(
             code: gameCode(),
             questionCount: count,
             questionDurationSeconds: duration,
+            showPartnerOption,
           },
           { transaction },
         );
@@ -520,8 +522,18 @@ export async function snapshot(
             ? {
                 id: active.id,
                 statement: q.statement,
-                leftOption: q.leftOption,
-                rightOption: q.rightOption,
+                leftOption:
+                  game.showPartnerOption ||
+                  identity.kind === "teacher" ||
+                  team?.leftPlayerId === identity.id
+                    ? q.leftOption
+                    : null,
+                rightOption:
+                  game.showPartnerOption ||
+                  identity.kind === "teacher" ||
+                  team?.rightPlayerId === identity.id
+                    ? q.rightOption
+                    : null,
                 category: q.category,
                 ...(revealed
                   ? {

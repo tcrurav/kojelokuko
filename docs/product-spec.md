@@ -137,6 +137,8 @@ El profesor puede mantener pantallas de explicación/clasificación el tiempo qu
 
 ## 13. Pantalla de pregunta del alumno
 
+Al crear la partida, el profesor elige si los jugadores ven la opción de su compañero (por defecto, sí). Si lo desactiva, durante cada pregunta cada jugador solo recibe y ve el texto de su propia opción; la tarjeta de la otra opción no aparece. Los espectadores no ven ninguna opción. Al cerrar la pregunta se mantiene esta visibilidad y se muestra la explicación. La preferencia se conserva al recargar. El profesor conserva acceso a ambas opciones.
+
 Mostrar de forma prominente:
 - “Pregunta X / N”;
 - enunciado;
@@ -265,6 +267,8 @@ Ejemplos:
 Mantener variedad y evitar humillaciones, características personales o humor ofensivo.
 
 ## 21. Vista del profesor tras cada pregunta
+
+Mientras una pregunta está activa, el profesor puede ocultar o mostrar ambas opciones en su propia pantalla mediante un botón. El enunciado, temporizador y controles permanecen visibles. Esta preferencia visual se mantiene entre preguntas mientras sigue en esa pantalla y no modifica lo que reciben los alumnos. Al cerrar la pregunta, las opciones se muestran para revisar el resultado.
 
 Mostrar:
 - respuesta correcta;
